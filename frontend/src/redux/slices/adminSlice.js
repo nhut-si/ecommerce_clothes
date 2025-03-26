@@ -28,11 +28,10 @@ export const addUser = createAsyncThunk(
           },
         }
       );
+      return response.data;
     } catch (error) {
       return rejectWithValue(error.response.data);
     }
-
-    return response.data;
   }
 );
 
@@ -90,9 +89,9 @@ const adminSlice = createSlice({
 
       .addCase(updateUser.fulfilled, (state, action) => {
         const updatedUser = action.payload;
-        const userIndex = state.users.findIndex((user) =>
-          user._id === updatedUser._id
-        );
+        const userIndex = state.users.findIndex((user) => {
+          user._id === updatedUser._id;
+        });
         if (userIndex !== -1) {
           state.users[userIndex] = updatedUser;
         }
@@ -103,7 +102,7 @@ const adminSlice = createSlice({
       .addCase(addUser.pending, (state) => {
         state.loading = true;
         state.error = null;
-      }) 
+      })
       .addCase(addUser.fulfilled, (state, action) => {
         state.loading = false;
         state.users.push(action.payload.user); // add a new user to the state

@@ -21,7 +21,7 @@ const initialState = {
   guestId: initialGuestId,
   loading: false,
   error: null,
-};
+};  
 
 // Async Thunk for User login
 export const loginUser = createAsyncThunk(

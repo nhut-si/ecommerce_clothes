@@ -5,8 +5,8 @@ import {
 import axios from "axios";
 
 // Async thunk to fetch user orders
-export const fectchUserOrders = createAsyncThunk(
-  "orders/fectchUserOrders",
+export const fetchUserOrders = createAsyncThunk(
+  "orders/fetchUserOrders",
   async (_, { rejectWithValue }) => {
     try {
       const response = await axios.get(
@@ -27,7 +27,7 @@ export const fectchUserOrders = createAsyncThunk(
 // Async thunk to fetch orders details by ID
 export const fetchOrderDetails = createAsyncThunk(
   "orders/fetchOrderDetails",
-  async (fetchOrderDetails, { rejectWithValue }) => {
+  async (orderId, { rejectWithValue }) => {
     try {
       const response = await axios.get(
         `${import.meta.env.VITE_BACKEND_URL}/api/orders/${orderId}`,
@@ -57,15 +57,15 @@ const orderSlice = createSlice({
     extraReducers: (builder) => {
         builder
         // Fetch User Orders
-        .addCase(fectchUserOrders.pending, (state) => {
+        .addCase(fetchUserOrders.pending, (state) => {
             state.isLoading = true;
             state.error = null;
         })
-        .addCase(fectchUserOrders.fulfilled, (state, action) => {
+        .addCase(fetchUserOrders.fulfilled, (state, action) => {
             state.isLoading = false;
             state.orders = action.payload
         })
-        .addCase(fectchUserOrders.rejected, (state, action) => {
+        .addCase(fetchUserOrders.rejected, (state, action) => {
             state.isLoading = false
             state.error = action.payload.message
         })
