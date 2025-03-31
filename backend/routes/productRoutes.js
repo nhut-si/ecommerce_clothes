@@ -20,7 +20,7 @@ router.post("/", protect, admin, async (req, res) => {
       brand,
       sizes,
       colors,
-      collections,
+      collections,  
       material,
       gender,
       images,
@@ -296,7 +296,7 @@ router.get("/similar/:id", async (req, res) => {
       return res.status(404).json({ message: "Product not found" });
     }
     const similarProducts = await Product.find({
-      _id: { $ne: id },
+      _id: { $ne: id }, // Exclude the current product ID 
       gender: product.gender,
       category: product.category,
     }).limit(4);

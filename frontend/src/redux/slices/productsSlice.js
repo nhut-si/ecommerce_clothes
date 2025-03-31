@@ -2,7 +2,7 @@ import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
 
 // Async Thunk to Fecth Products by Collection and optinal Filter
-export const fetchProductsByFilters = createAsyncThunk(
+export const fetchProductsByFilters  = createAsyncThunk(
   "products/fetchByFilters",
   async ({
     collection,
@@ -70,7 +70,7 @@ export const updateProduct = createAsyncThunk(
 // Async Thunk to Fetch similar products
 export const fetchSimilarProducts = createAsyncThunk(
   "products/fetchSimilarProducts",
-  async (id) => {
+  async ({ id }) => {
     const response = await axios.get(
       `${import.meta.env.VITE_BACKEND_URL}/api/products/similar/${id}`
     );
@@ -123,17 +123,17 @@ const productsSlice = createSlice({
   extraReducers: (builder) => {
     builder
       // handle fecthing products with filter
-      .addCase(fetchProductsByFilters.pending, (state) => {
+      .addCase(fetchProductsByFilters .pending, (state) => {
         state.loading = true;
         state.error = null;
       })
-      .addCase(fetchProductsByFilters.fulfilled, (state, action) => {
+      .addCase(fetchProductsByFilters .fulfilled, (state, action) => {
         state.loading = false;
         state.products = Array.isArray(action.payload) ? action.payload : [];
       })
-      .addCase(fetchProductsByFilters.rejected, (state, action) => {
+      .addCase(fetchProductsByFilters .rejected, (state, action) => {
         state.loading = false;
-        state.error = action.error.message;
+        state.error - action.error.message;
       })
 
       // Handle fetching single product details
@@ -176,13 +176,13 @@ const productsSlice = createSlice({
       })
       .addCase(fetchSimilarProducts.fulfilled, (state, action) => {
         state.loading = false;
-        state.products = action.payload;
+        state.similarProducts = action.payload;
       })
       .addCase(fetchSimilarProducts.rejected, (state, action) => {
         state.loading = false;
         state.error = action.error.message;
       });
-  },
+  },   
 });
 
 export const { setFilters, clearFilters } = productsSlice.actions;

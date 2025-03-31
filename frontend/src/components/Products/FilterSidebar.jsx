@@ -30,7 +30,7 @@ const FilterSidebar = () => {
     "Orange",
     "Pink",
   ];
-  const sizes = ["S", "M", "L", "XL", "XXL"];
+  const sizes = ["XS","S", "M", "L", "XL", "XXL"];
   const materials = [
     "Cotton",
     "Polyester",
@@ -49,7 +49,7 @@ const FilterSidebar = () => {
     "Fashionista",
     "ChicStyle",
   ];
-  const genders = ["Man", "Women"];
+  const genders = ["Men", "Women"];
 
   useEffect(() => {
     const params = Object.fromEntries([...searchParams]);

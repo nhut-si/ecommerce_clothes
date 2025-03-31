@@ -2,9 +2,9 @@ const jwt = require("jsonwebtoken");
 const User = require("../models/User");
 
 // Middleware to protect routes
-const protect = async (req, res, next  ) => {
+const protect = async (req, res, next) => {
   let token;
-  
+
   if (
     req.headers.authorization &&
     req.headers.authorization.startsWith("Bearer ")
@@ -13,7 +13,15 @@ const protect = async (req, res, next  ) => {
       token = req.headers.authorization.split(" ")[1];
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-      req.user = await User.findOne(decoded.user._id).select("-password"); // Exclude password
+      // Sửa ở đây: Tìm user bằng ID từ decoded.user.id
+      const user = await User.findById(decoded.user.id).select("-password");
+
+      // Kiểm tra xem user có tồn tại không
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      req.user = user; // Gán user đã tìm thấy vào req.user
       next();
     } catch (error) {
       console.error("Token verification failed:", error);

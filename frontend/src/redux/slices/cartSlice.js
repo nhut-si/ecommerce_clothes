@@ -12,9 +12,9 @@ const saveCartToStorage = (cart) => {
   localStorage.setItem("cart", JSON.stringify(cart));
 };
 
-// Fetch cart for a user or guest
+// Fectch cart for a user or guest
 export const fetchCart = createAsyncThunk(
-  "cart/fetch",
+  "cart/fectch",
   async ({ userId, guestId }, { rejectWithValue }) => {
     try {
       const response = await axios.get(
