@@ -133,7 +133,7 @@ const productsSlice = createSlice({
       })
       .addCase(fetchProductsByFilters .rejected, (state, action) => {
         state.loading = false;
-        state.error - action.error.message;
+        state.error = action.error.message;
       })
 
       // Handle fetching single product details

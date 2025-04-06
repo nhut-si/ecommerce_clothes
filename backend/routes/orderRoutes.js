@@ -13,6 +13,7 @@ router.get("/my-orders", protect, async (req, res) => {
     const orders = await Order.find({ user: req.user._id }).sort({
       createdAt: -1,
     }); // sort by most recent orders
+    console.log("Orders found:", orders);
     res.json(orders);
   } catch (error) {
     console.log(error);

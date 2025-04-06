@@ -7,9 +7,10 @@ const USER_TOKEN = `Bearer ${localStorage.getItem("userToken")}`;
 export const fetchAdminProducts = createAsyncThunk(
   "adminProducts/fetchProducts",
   async () => {
+    const token = localStorage.getItem("userToken");
     const response = await axios.get(`${API_URL}/api/admin/products`, {
       headers: {
-        Authorization: USER_TOKEN,
+        Authorization: `Bearer ${token}`,
       },
     });
     return response.data;
@@ -54,7 +55,7 @@ export const updateProduct = createAsyncThunk(
 export const deleteProduct = createAsyncThunk(
   "adminProducts/deleteProduct",
   async (id) => {
-    const response = await axios.delete(`${API_URL}/api/admin/products/${id}`, {
+    const response = await axios.delete(`${API_URL}/api/products/${id}`, {
       headers: {
         Authorization: USER_TOKEN,
       },

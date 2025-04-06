@@ -22,6 +22,7 @@ import ProductManagement from "./components/Admin/ProductManagement";
 import EditProductPage from "./components/Admin/EditProductPage";
 import OrderManagement from "./components/Admin/OrderManagement";
 import ProtectedRoute from "./components/Common/ProtectedRoute";
+// import AddProductPage from "./components/Admin/AddProductPage";
 
 const App = () => {
   return (
@@ -62,6 +63,7 @@ const App = () => {
             <Route path="products" element={<ProductManagement />} />
             <Route path="products/:id/edit" element={<EditProductPage />} />
             <Route path="orders" element={<OrderManagement />} />
+            {/* <Route path="products/create" element={<AddProductPage/>} /> */}
           </Route>
         </Routes>
       </BrowserRouter>

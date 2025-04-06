@@ -15,14 +15,11 @@ const OrderManagement = () => {
     dispatch(fetchAllOrders());
   }, [dispatch, user, navigate]);
 
-  const handleStatusChange = (orderId, status) => {
-    dispatch(
-      updateOrderStatus({
-        id: orderId,
-        status,
-      })
-    );
+  const handleStatusChange = async (orderId, status) => {
+    await dispatch(updateOrderStatus({ id: orderId, status }));
+    dispatch(fetchAllOrders()); // Gọi lại API để làm mới danh sách
   };
+  
 
   if (loading) return <p>Loading ...</p>
   if (error) return <p>Error: {error}</p>

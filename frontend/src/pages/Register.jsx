@@ -12,7 +12,7 @@ const Register = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const location = useLocation();
-  const { user, guestId } = useSelector((state) => state.auth);
+  const { user, guestId, loading } = useSelector((state) => state.auth);
   const { cart } = useSelector((state) => state.cart);
 
   // Get redirect parameter and check if it's checkout or something
@@ -30,7 +30,6 @@ const Register = () => {
       }
     }
   }, [user, guestId, cart, navigate, isCheckoutRedirect, dispatch]);
-
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -84,11 +83,14 @@ const Register = () => {
             type="submit"
             className="w-full bg-black text-white p-2 rounded-lg font-semibold hover:bg-gray-800 transition"
           >
-            Sign Up
+            {loading ? "Loading ..." : "Sign Up"}
           </button>
           <p className="mt-6 text-center text-sm">
             Have an account?{" "}
-            <Link to={`/login?redirect=${encodeURIComponent(redirect)}`} className="text-blue-500 ml-1">
+            <Link
+              to={`/login?redirect=${encodeURIComponent(redirect)}`}
+              className="text-blue-500 ml-1"
+            >
               Login
             </Link>
           </p>

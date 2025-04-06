@@ -108,6 +108,7 @@ const adminOrderSlice = createSlice({
           state.orders[orderIndex] = updateOrder;
         }
       })
+      
       // Delete a order
       .addCase(deleteOrder.fulfilled, (state, action) => {
         state.orders = state.orders.filter((order) => {
