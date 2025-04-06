@@ -1,5 +1,5 @@
 {
-  "verdion": 2,
+  "version": 2,
   "name": "backend",
   "builds": [
     {
