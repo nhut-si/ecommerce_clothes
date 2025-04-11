@@ -30,7 +30,7 @@ const App = () => {
       <BrowserRouter
         future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
       >
-        <Toaster position="top-right" />
+        <Toaster position="bottom-right" />
         <Routes>
           <Route path="/" element={<UserLayout />}>
             <Route index element={<Home />} />
