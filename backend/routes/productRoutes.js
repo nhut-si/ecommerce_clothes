@@ -147,7 +147,6 @@ router.delete("/:id", protect, admin, async (req, res) => {
 // @route GET /api/products
 // @desc GET all products with optional query filters
 // @access Public
-
 router.get("/", async (req, res) => {
   try {
     const {

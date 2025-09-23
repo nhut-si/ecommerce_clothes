@@ -1,4 +1,5 @@
 const express = require("express");
+const { swaggerUi, swaggerSpec } = require("./swagger");
 const cors = require("cors");
 const dotenv = require("dotenv");
 const connectDB = require("./config/db");
@@ -27,7 +28,7 @@ const PORT = process.env.PORT || 3000;
 connectDB();
 
 app.get("/", (req, res) => {
-  res.json({ message: "xin chao" });
+  res.send("Hello Express + Swagger!");
 });
 
 // API Routes
@@ -52,7 +53,11 @@ app.use("/api/admin/products", adminProductRoutes)
 
 app.use("/api/admin/orders", adminOderRoutes)
 
+// Swagger UI
+app.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+
 
 app.listen(PORT, () => {
-  console.log(`Server is running on http://localhost:${PORT}`);
+  console.log(`Server running at http://localhost:${PORT}`);
+  console.log(`Swagger docs at http://localhost:${PORT}/docs`);
 });
