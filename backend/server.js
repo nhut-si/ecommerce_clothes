@@ -22,7 +22,7 @@ app.use(cors());
 // Load biến môi trường trước khi kết nối
 dotenv.config();
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 5000;
 
 // Kết nối đến MongoDB
 connectDB();
