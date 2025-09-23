@@ -5,7 +5,7 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    image: ${DOCKER_USERNAME}/ecommerce-backend:latest
+    image: ${DOCKER_USERNAME:-ecommerce}/ecommerce-backend:latest
     container_name: ecommerce-backend
     environment:
       - NODE_ENV=production
@@ -15,12 +15,13 @@ services:
       - "5000:5000"
     networks:
       - app-network
+    restart: always
 
   frontend:
     build:
       context: ./frontend
       dockerfile: Dockerfile
-    image: ${DOCKER_USERNAME}/ecommerce-frontend:latest
+    image: ${DOCKER_USERNAME:-ecommerce}/ecommerce-frontend:latest
     container_name: ecommerce-frontend
     environment:
       - NODE_ENV=production
@@ -28,6 +29,7 @@ services:
       - "3000:80"
     networks:
       - app-network
+    restart: always
 
 networks:
   app-network:
