@@ -57,7 +57,11 @@ app.use("/api/admin/orders", adminOderRoutes)
 app.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 
+// app.listen(PORT, () => {
+//   console.log(`Server running at http://localhost:${PORT}`);
+//   console.log(`Swagger docs at http://localhost:${PORT}/docs`);
+// });
 app.listen(PORT, () => {
-  console.log(`Server running at http://localhost:${PORT}`);
-  console.log(`Swagger docs at http://localhost:${PORT}/docs`);
+  console.log(`Server running at http://103.20.96.185:${PORT}`);
+  console.log(`Swagger docs at http://103.20.96.185:${PORT}/docs`);
 });
