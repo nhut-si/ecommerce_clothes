@@ -24,12 +24,12 @@ import { fetchProductsByFilters } from "../redux/slices/productsSlice";
         limit: 8,
       })
     );
+
+    const API_URL = import.meta.env.VITE_BACKEND_URL;
     // Fetch the best seller product
     const fetchBestSeller = async () => {
       try {
-        const response = await axios.get(
-          `${import.meta.env.VITE_BACKEND_URL}/api/products/best-seller`
-        );
+        const response = await axios.get(`${API_URL}/api/products/new-arrivals`);
         setBestSellerProduct(response.data);  
       } catch (error) {
         console.error(error);
