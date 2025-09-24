@@ -17,7 +17,12 @@ const adminOderRoutes = require("./routes/admin/adminOrderRoutes")
 
 const app = express();
 app.use(express.json());
-app.use(cors());  
+const corsOptions = {
+  // origin: 'http://localhost:3000',
+  origin: 'http://103.20.96.185:3000/',
+  optionsSuccessStatus: 200
+};
+app.use(cors(corsOptions));
 
 // Load biến môi trường trước khi kết nối
 dotenv.config();
@@ -57,11 +62,7 @@ app.use("/api/admin/orders", adminOderRoutes)
 app.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 
-// app.listen(PORT, () => {
-//   console.log(`Server running at http://localhost:${PORT}`);
-//   console.log(`Swagger docs at http://localhost:${PORT}/docs`);
-// });
 app.listen(PORT, () => {
-  console.log(`Server running at http://103.20.96.185:${PORT}`);
-  console.log(`Swagger docs at http://103.20.96.185:${PORT}/docs`);
+  console.log(`Server running at http://localhost:${PORT}`);
+  console.log(`Swagger docs at http://localhost:${PORT}/docs`);
 });
