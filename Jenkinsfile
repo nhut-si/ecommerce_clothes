@@ -44,9 +44,6 @@ pipeline {
         // Removed separate app build; Dockerfiles handle builds during image creation
         
         stage('Build Docker Images') {
-            when {
-                    branch 'master'
-            }
             parallel {
                 stage('Build Backend Image') {
                     steps {
@@ -100,12 +97,6 @@ pipeline {
         }
         
         stage('Deploy to Production') {
-            when {
-                anyOf {
-                    branch 'main'
-                    branch 'master'
-                }
-            }
             steps {
                 echo 'Deploying to production environment...'
                 script {
