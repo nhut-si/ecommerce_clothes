@@ -2,8 +2,8 @@ pipeline {
     agent any
     
     environment {
-        // Docker Hub credentials (cần cấu hình trong Jenkins)
-        DOCKER_HUB_CREDENTIALS = credentials('docker-hub')
+        // Docker Hub credentials (khớp ID với Jenkins: dockerhub-cred)
+        DOCKER_HUB_CREDENTIALS = credentials('dockerhub-cred')
         DOCKER_USERNAME = "${DOCKER_HUB_CREDENTIALS_USR}"
         DOCKER_PASSWORD = "${DOCKER_HUB_CREDENTIALS_PSW}"
         
@@ -14,8 +14,9 @@ pipeline {
         // Environment variables
         NODE_ENV = 'production'
         
-        // Build number for tagging
+        // Build/run tags
         BUILD_TAG = "${BUILD_NUMBER}"
+        COMMIT_SHA = "${GIT_COMMIT}"
 
         // Remote server
         SERVER_HOST = "3.107.188.121"
@@ -60,6 +61,8 @@ pipeline {
                                 docker.withRegistry('https://registry-1.docker.io/v2/', 'dockerhub-cred') {
                                     backendImage.push()
                                     backendImage.push('latest')
+                                    sh "docker tag ${BACKEND_IMAGE}:${BUILD_TAG} ${BACKEND_IMAGE}:${COMMIT_SHA}"
+                                    sh "docker push ${BACKEND_IMAGE}:${COMMIT_SHA}"
                                 }
                             }
                         }
@@ -70,15 +73,16 @@ pipeline {
                         dir('frontend') {
                             echo 'Building frontend Docker image...'
                             script {
-                                withCredentials([string(credentialsId: 'paypal-client-id', variable: 'PAYPAL_CLIENT_ID')]) {
-                                    def frontendImage = docker.build(
-                                        "${FRONTEND_IMAGE}:${BUILD_TAG}",
-                                        "--build-arg VITE_BACKEND_URL=${FRONTEND_BACKEND_URL} --build-arg VITE_PAYPAL_CLIENT_ID=${PAYPAL_CLIENT_ID} ."
-                                    )
-                                    docker.withRegistry('https://registry-1.docker.io/v2/', 'dockerhub-cred') {
-                                        frontendImage.push()
-                                        frontendImage.push('latest')
-                                    }
+                                def paypalId = env.PAYPAL_CLIENT_ID ?: ''
+                                def frontendImage = docker.build(
+                                    "${FRONTEND_IMAGE}:${BUILD_TAG}",
+                                    "--build-arg VITE_BACKEND_URL=${FRONTEND_BACKEND_URL} --build-arg VITE_PAYPAL_CLIENT_ID=${paypalId} ."
+                                )
+                                docker.withRegistry('https://registry-1.docker.io/v2/', 'dockerhub-cred') {
+                                    frontendImage.push()
+                                    frontendImage.push('latest')
+                                    sh "docker tag ${FRONTEND_IMAGE}:${BUILD_TAG} ${FRONTEND_IMAGE}:${COMMIT_SHA}"
+                                    sh "docker push ${FRONTEND_IMAGE}:${COMMIT_SHA}"
                                 }
                             }
                         }
@@ -137,7 +141,7 @@ pipeline {
                                 ssh -o StrictHostKeyChecking=no ${SERVER_USER}@${SERVER_HOST} "\
                                   cd ~/ecommerce-clothes && \
                                   echo DOCKER_USERNAME=${DOCKER_USERNAME} > .env && \
-                                  echo BUILD_TAG=${BUILD_TAG} >> .env && \
+                                  echo BUILD_TAG=${COMMIT_SHA} >> .env && \
                                   echo MONGO_URL_PROD=\"${MONGO_URL_PROD}\" >> .env && \
                                   echo JWT_SECRET=\"${JWT_SECRET}\" >> .env && \
                                   echo CLOUDINARY_CLOUD_NAME=\"${CLOUDINARY_CLOUD_NAME}\" >> .env && \
