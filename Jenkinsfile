@@ -6,7 +6,7 @@ pipeline {
         BACKEND_IMAGE = "ecommerce-backend"
         FRONTEND_IMAGE = "ecommerce-frontend"
         SERVER_HOST = "3.107.188.121"
-        SERVER_USER = "unbuntu"
+        SERVER_USER = "ubuntu"
     }
 
     stages {
