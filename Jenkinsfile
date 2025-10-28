@@ -49,14 +49,16 @@ pipeline {
                     steps {
                         dir('backend') {
                             echo 'Building backend Docker image...'
-                            script {
-                                def backendImage = docker.build("${BACKEND_IMAGE}:${BUILD_TAG}")
-                                docker.withRegistry('https://registry-1.docker.io/v2/', 'dockerhub-cred') {
-                                    backendImage.push()
-                                    backendImage.push('latest')
-                                    sh "docker tag ${BACKEND_IMAGE}:${BUILD_TAG} ${BACKEND_IMAGE}:${COMMIT_SHA}"
-                                    sh "docker push ${BACKEND_IMAGE}:${COMMIT_SHA}"
-                                }
+                            withCredentials([usernamePassword(credentialsId: 'dockerhub-cred', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+                                sh '''
+                                    echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
+                                    docker build -t ${BACKEND_IMAGE}:${BUILD_TAG} .
+                                    docker tag ${BACKEND_IMAGE}:${BUILD_TAG} ${BACKEND_IMAGE}:latest
+                                    docker tag ${BACKEND_IMAGE}:${BUILD_TAG} ${BACKEND_IMAGE}:${COMMIT_SHA}
+                                    docker push ${BACKEND_IMAGE}:${BUILD_TAG}
+                                    docker push ${BACKEND_IMAGE}:latest
+                                    docker push ${BACKEND_IMAGE}:${COMMIT_SHA}
+                                '''
                             }
                         }
                     }
@@ -65,18 +67,18 @@ pipeline {
                     steps {
                         dir('frontend') {
                             echo 'Building frontend Docker image...'
-                            script {
-                                def paypalId = env.PAYPAL_CLIENT_ID ?: ''
-                                def frontendImage = docker.build(
-                                    "${FRONTEND_IMAGE}:${BUILD_TAG}",
-                                    "--build-arg VITE_BACKEND_URL=${FRONTEND_BACKEND_URL} --build-arg VITE_PAYPAL_CLIENT_ID=${paypalId} ."
-                                )
-                                docker.withRegistry('https://registry-1.docker.io/v2/', 'dockerhub-cred') {
-                                    frontendImage.push()
-                                    frontendImage.push('latest')
-                                    sh "docker tag ${FRONTEND_IMAGE}:${BUILD_TAG} ${FRONTEND_IMAGE}:${COMMIT_SHA}"
-                                    sh "docker push ${FRONTEND_IMAGE}:${COMMIT_SHA}"
-                                }
+                            withCredentials([usernamePassword(credentialsId: 'dockerhub-cred', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+                                sh '''
+                                    echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
+                                    docker build -t ${FRONTEND_IMAGE}:${BUILD_TAG} \
+                                        --build-arg VITE_BACKEND_URL=${FRONTEND_BACKEND_URL} \
+                                        --build-arg VITE_PAYPAL_CLIENT_ID="" .
+                                    docker tag ${FRONTEND_IMAGE}:${BUILD_TAG} ${FRONTEND_IMAGE}:latest
+                                    docker tag ${FRONTEND_IMAGE}:${BUILD_TAG} ${FRONTEND_IMAGE}:${COMMIT_SHA}
+                                    docker push ${FRONTEND_IMAGE}:${BUILD_TAG}
+                                    docker push ${FRONTEND_IMAGE}:latest
+                                    docker push ${FRONTEND_IMAGE}:${COMMIT_SHA}
+                                '''
                             }
                         }
                     }
