@@ -18,8 +18,8 @@ const adminOderRoutes = require("./routes/admin/adminOrderRoutes")
 const app = express();
 app.use(express.json());
 const corsOptions = {
-  // origin: 'http://localhost:3000',
-  origin: 'http://103.20.96.185:3000/',
+  origin: 'http://localhost:3000',
+  // origin: 'http://103.20.96.185:3000/',
   optionsSuccessStatus: 200
 };
 app.use(cors(corsOptions));
@@ -34,6 +34,16 @@ connectDB();
 
 app.get("/", (req, res) => {
   res.send("Hello Express + Swagger!");
+});
+
+// Health check endpoint for CI/CD
+app.get("/api/health", (req, res) => {
+  res.status(200).json({
+    status: "healthy",
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime(),
+    environment: process.env.NODE_ENV || "development"
+  });
 });
 
 // API Routes
