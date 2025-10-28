@@ -12,6 +12,11 @@ services:
       - CLOUDINARY_CLOUD_NAME=${CLOUDINARY_CLOUD_NAME}
       - CLOUDINARY_API_KEY=${CLOUDINARY_API_KEY}
       - CLOUDINARY_API_SECRET=${CLOUDINARY_API_SECRET}
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:5000/api/health"]
+      interval: 15s
+      timeout: 3s
+      retries: 5
     expose:
       - "5000"
     networks:
@@ -29,13 +34,19 @@ services:
     container_name: ecommerce-frontend-prod
     environment:
       - NODE_ENV=production
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost/"]
+      interval: 30s
+      timeout: 3s
+      retries: 5
     expose:
       - "80"
     networks:
       - prod-network
     restart: always
     depends_on:
-      - backend
+      backend:
+        condition: service_healthy
     deploy:
       resources:
         limits:
@@ -57,8 +68,10 @@ services:
       - prod-network
     restart: always
     depends_on:
-      - frontend
-      - backend
+      backend:
+        condition: service_healthy
+      frontend:
+        condition: service_healthy
 
 networks:
   prod-network:

@@ -26,9 +26,7 @@ pipeline {
         CORS_ORIGIN = "http://3.107.188.121,https://3.107.188.121"
     }
     
-    tools {
-        nodejs '20' // Cần cấu hình Node.js 20 trong Jenkins Global Tools
-    }
+    // Removed NodeJS tool usage to avoid agent dependency; all builds happen inside Dockerfiles
     
     stages {
         stage('Checkout') {
@@ -38,72 +36,11 @@ pipeline {
             }
         }
         
-        stage('Install Dependencies') {
-            parallel {
-                stage('Backend Dependencies') {
-                    steps {
-                        dir('backend') {
-                            echo 'Installing backend dependencies...'
-                            sh 'npm ci'
-                        }
-                    }
-                }
-                stage('Frontend Dependencies') {
-                    steps {
-                        dir('frontend') {
-                            echo 'Installing frontend dependencies...'
-                            sh 'npm ci'
-                        }
-                    }
-                }
-            }
-        }
+        // Removed agent-side dependency installation; handled inside Docker images
         
-        stage('Code Quality & Testing') {
-            parallel {
-                stage('Backend Lint & Test') {
-                    steps {
-                        dir('backend') {
-                            echo 'Running backend linting and tests...'
-                            // Uncomment when tests are available
-                            // sh 'npm run lint'
-                            // sh 'npm test'
-                            echo 'Backend quality checks completed'
-                        }
-                    }
-                }
-                stage('Frontend Lint & Test') {
-                    steps {
-                        dir('frontend') {
-                            echo 'Running frontend linting and tests...'
-                            sh 'npm run lint'
-                            // Uncomment when tests are available
-                            // sh 'npm test'
-                        }
-                    }
-                }
-            }
-        }
+        // Optional: Add quality gates using containerized tools (e.g., run linters/tests inside Docker) if needed
         
-        stage('Build Applications') {
-            parallel {
-                stage('Build Backend') {
-                    steps {
-                        dir('backend') {
-                            echo 'Backend is ready for deployment (Node.js app)'
-                        }
-                    }
-                }
-                stage('Build Frontend') {
-                    steps {
-                        dir('frontend') {
-                            echo 'Building frontend application...'
-                            sh 'npm run build'
-                        }
-                    }
-                }
-            }
-        }
+        // Removed separate app build; Dockerfiles handle builds during image creation
         
         stage('Build Docker Images') {
             when {
@@ -150,32 +87,7 @@ pipeline {
             }
         }
         
-        stage('Security Scan') {
-            when {
-                anyOf {
-                    branch 'main'
-                    branch 'master'
-                }
-            }
-            steps {
-                echo 'Running security scans...'
-                // Có thể thêm các tools như Snyk, OWASP dependency check
-                script {
-                    try {
-                        dir('backend') {
-                            sh 'npm audit --audit-level high'
-                        }
-                        dir('frontend') {
-                            sh 'npm audit --audit-level high'
-                        }
-                    } catch (Exception e) {
-                        echo "Security scan found vulnerabilities: ${e.getMessage()}"
-                        // Có thể set unstable thay vì fail
-                        currentBuild.result = 'UNSTABLE'
-                    }
-                }
-            }
-        }
+        // Optional: Add container image scanning (e.g., Trivy) stage if the tool is available on the agent
         
         stage('Deploy to Staging') {
             when {
@@ -234,8 +146,7 @@ pipeline {
                                   echo CORS_ORIGIN=\"${CORS_ORIGIN}\" >> .env && \
                                   echo \"${DOCKER_PASSWORD}\" | docker login -u ${DOCKER_USERNAME} --password-stdin && \
                                   docker compose --env-file .env pull && \
-                                  docker compose --env-file .env down && \
-                                  docker compose --env-file .env up -d && \
+                                  docker compose --env-file .env up -d --pull always && \
                                   docker image prune -f \
                                 "
                             '''
