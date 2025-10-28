@@ -20,6 +20,10 @@ pipeline {
         // Remote server
         SERVER_HOST = "3.107.188.121"
         SERVER_USER = "root"
+
+        // Frontend build-time config
+        FRONTEND_BACKEND_URL = ""
+        CORS_ORIGIN = "http://3.107.188.121,https://3.107.188.121"
     }
     
     tools {
@@ -129,10 +133,15 @@ pipeline {
                         dir('frontend') {
                             echo 'Building frontend Docker image...'
                             script {
-                                def frontendImage = docker.build("${FRONTEND_IMAGE}:${BUILD_TAG}")
-                                docker.withRegistry('https://registry-1.docker.io/v2/', 'docker-hub-credentials') {
-                                    frontendImage.push()
-                                    frontendImage.push('latest')
+                                withCredentials([string(credentialsId: 'paypal-client-id', variable: 'PAYPAL_CLIENT_ID')]) {
+                                    def frontendImage = docker.build(
+                                        "${FRONTEND_IMAGE}:${BUILD_TAG}",
+                                        "--build-arg VITE_BACKEND_URL=${FRONTEND_BACKEND_URL} --build-arg VITE_PAYPAL_CLIENT_ID=${PAYPAL_CLIENT_ID} ."
+                                    )
+                                    docker.withRegistry('https://registry-1.docker.io/v2/', 'docker-hub-credentials') {
+                                        frontendImage.push()
+                                        frontendImage.push('latest')
+                                    }
                                 }
                             }
                         }
@@ -209,6 +218,9 @@ pipeline {
                                 # Copy compose file
                                 scp -o StrictHostKeyChecking=no docker-compose.prod.yml ${SERVER_USER}@${SERVER_HOST}:~/ecommerce-clothes/docker-compose.yml
 
+                                # Copy nginx configuration
+                                scp -o StrictHostKeyChecking=no -r nginx ${SERVER_USER}@${SERVER_HOST}:~/ecommerce-clothes/
+
                                 # Create .env and deploy remotely
                                 ssh -o StrictHostKeyChecking=no ${SERVER_USER}@${SERVER_HOST} "\
                                   cd ~/ecommerce-clothes && \
@@ -219,6 +231,7 @@ pipeline {
                                   echo CLOUDINARY_CLOUD_NAME=\"${CLOUDINARY_CLOUD_NAME}\" >> .env && \
                                   echo CLOUDINARY_API_KEY=\"${CLOUDINARY_API_KEY}\" >> .env && \
                                   echo CLOUDINARY_API_SECRET=\"${CLOUDINARY_API_SECRET}\" >> .env && \
+                                  echo CORS_ORIGIN=\"${CORS_ORIGIN}\" >> .env && \
                                   echo \"${DOCKER_PASSWORD}\" | docker login -u ${DOCKER_USERNAME} --password-stdin && \
                                   docker compose --env-file .env pull && \
                                   docker compose --env-file .env down && \

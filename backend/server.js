@@ -15,17 +15,18 @@ const adminProductRoutes = require("./routes/admin/adminProductRoutes")
 const adminOderRoutes = require("./routes/admin/adminOrderRoutes")
 
 
+// Load env before using any env variables
+dotenv.config();
+
 const app = express();
 app.use(express.json());
-const corsOptions = {
-  origin: 'http://localhost:3000',
-  // origin: 'http://103.20.96.185:3000/',
-  optionsSuccessStatus: 200
-};
-app.use(cors(corsOptions));
 
-// Load biến môi trường trước khi kết nối
-dotenv.config();
+// Allow CORS from configured origins (comma-separated)
+const allowedOrigins = process.env.CORS_ORIGIN
+  ? process.env.CORS_ORIGIN.split(",").map((s) => s.trim())
+  : ["http://localhost:3000"];
+
+app.use(cors({ origin: allowedOrigins, optionsSuccessStatus: 200 }));
 
 const PORT = process.env.PORT || 5000;
 
