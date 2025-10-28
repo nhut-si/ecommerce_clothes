@@ -112,38 +112,45 @@ pipeline {
                         string(credentialsId: 'jwt-secret', variable: 'JWT_SECRET'),
                         string(credentialsId: 'cloudinary-cloud-name', variable: 'CLOUDINARY_CLOUD_NAME'),
                         string(credentialsId: 'cloudinary-api-key', variable: 'CLOUDINARY_API_KEY'),
-                        string(credentialsId: 'cloudinary-api-secret', variable: 'CLOUDINARY_API_SECRET')
+                        string(credentialsId: 'cloudinary-api-secret', variable: 'CLOUDINARY_API_SECRET'),
+                        sshUserPrivateKey(credentialsId: 'server-ssh-key', keyFileVariable: 'SSH_KEY', usernameVariable: 'SSH_USER')
                     ]) {
-                        sshagent (credentials: ['server-ssh-key']) {
-                            sh '''
-                                set -e
-                                # Prepare remote directory
-                                ssh -o StrictHostKeyChecking=no ${SERVER_USER}@${SERVER_HOST} "mkdir -p ~/ecommerce-clothes"
+                        sh '''
+                            set -e
+                            # Setup SSH key
+                            mkdir -p ~/.ssh
+                            cp "$SSH_KEY" ~/.ssh/deploy_key
+                            chmod 600 ~/.ssh/deploy_key
+                            
+                            # Prepare remote directory
+                            ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no ${SERVER_USER}@${SERVER_HOST} "mkdir -p ~/ecommerce-clothes"
 
-                                # Copy compose file
-                                scp -o StrictHostKeyChecking=no docker-compose.prod.yml ${SERVER_USER}@${SERVER_HOST}:~/ecommerce-clothes/docker-compose.yml
+                            # Copy compose file
+                            scp -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no docker-compose.prod.yml ${SERVER_USER}@${SERVER_HOST}:~/ecommerce-clothes/docker-compose.yml
 
-                                # Copy nginx configuration
-                                scp -o StrictHostKeyChecking=no -r nginx ${SERVER_USER}@${SERVER_HOST}:~/ecommerce-clothes/
+                            # Copy nginx configuration
+                            scp -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no -r nginx ${SERVER_USER}@${SERVER_HOST}:~/ecommerce-clothes/
 
-                                # Create .env and deploy remotely
-                                ssh -o StrictHostKeyChecking=no ${SERVER_USER}@${SERVER_HOST} "\
-                                  cd ~/ecommerce-clothes && \
-                                  echo DOCKER_USERNAME=${DOCKER_USERNAME} > .env && \
-                                  echo BUILD_TAG=${COMMIT_SHA} >> .env && \
-                                  echo MONGO_URL_PROD=\"${MONGO_URL_PROD}\" >> .env && \
-                                  echo JWT_SECRET=\"${JWT_SECRET}\" >> .env && \
-                                  echo CLOUDINARY_CLOUD_NAME=\"${CLOUDINARY_CLOUD_NAME}\" >> .env && \
-                                  echo CLOUDINARY_API_KEY=\"${CLOUDINARY_API_KEY}\" >> .env && \
-                                  echo CLOUDINARY_API_SECRET=\"${CLOUDINARY_API_SECRET}\" >> .env && \
-                                  echo CORS_ORIGIN=\"${CORS_ORIGIN}\" >> .env && \
-                                  echo \"${DOCKER_PASSWORD}\" | docker login -u ${DOCKER_USERNAME} --password-stdin && \
-                                  docker compose --env-file .env pull && \
-                                  docker compose --env-file .env up -d --pull always && \
-                                  docker image prune -f \
-                                "
-                            '''
-                        }
+                            # Create .env and deploy remotely
+                            ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no ${SERVER_USER}@${SERVER_HOST} "
+                              cd ~/ecommerce-clothes && 
+                              echo DOCKER_USERNAME=${DOCKER_USERNAME} > .env && 
+                              echo BUILD_TAG=${COMMIT_SHA} >> .env && 
+                              echo MONGO_URL_PROD=\\\"${MONGO_URL_PROD}\\\" >> .env && 
+                              echo JWT_SECRET=\\\"${JWT_SECRET}\\\" >> .env && 
+                              echo CLOUDINARY_CLOUD_NAME=\\\"${CLOUDINARY_CLOUD_NAME}\\\" >> .env && 
+                              echo CLOUDINARY_API_KEY=\\\"${CLOUDINARY_API_KEY}\\\" >> .env && 
+                              echo CLOUDINARY_API_SECRET=\\\"${CLOUDINARY_API_SECRET}\\\" >> .env && 
+                              echo CORS_ORIGIN=\\\"${CORS_ORIGIN}\\\" >> .env && 
+                              echo \\\"${DOCKER_PASSWORD}\\\" | docker login -u ${DOCKER_USERNAME} --password-stdin && 
+                              docker compose --env-file .env pull && 
+                              docker compose --env-file .env up -d --pull always && 
+                              docker image prune -f
+                            "
+                            
+                            # Cleanup
+                            rm -f ~/.ssh/deploy_key
+                        '''
                     }
                 }
             }
