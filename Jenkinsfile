@@ -3,7 +3,7 @@ pipeline {
     
     environment {
         // Docker Hub credentials (cần cấu hình trong Jenkins)
-        DOCKER_HUB_CREDENTIALS = credentials('docker-hub-credentials')
+        DOCKER_HUB_CREDENTIALS = credentials('docker-hub')
         DOCKER_USERNAME = "${DOCKER_HUB_CREDENTIALS_USR}"
         DOCKER_PASSWORD = "${DOCKER_HUB_CREDENTIALS_PSW}"
         
@@ -57,7 +57,7 @@ pipeline {
                             echo 'Building backend Docker image...'
                             script {
                                 def backendImage = docker.build("${BACKEND_IMAGE}:${BUILD_TAG}")
-                                docker.withRegistry('https://registry-1.docker.io/v2/', 'docker-hub-credentials') {
+                                docker.withRegistry('https://registry-1.docker.io/v2/', 'dockerhub-cred') {
                                     backendImage.push()
                                     backendImage.push('latest')
                                 }
@@ -75,7 +75,7 @@ pipeline {
                                         "${FRONTEND_IMAGE}:${BUILD_TAG}",
                                         "--build-arg VITE_BACKEND_URL=${FRONTEND_BACKEND_URL} --build-arg VITE_PAYPAL_CLIENT_ID=${PAYPAL_CLIENT_ID} ."
                                     )
-                                    docker.withRegistry('https://registry-1.docker.io/v2/', 'docker-hub-credentials') {
+                                    docker.withRegistry('https://registry-1.docker.io/v2/', 'dockerhub-cred') {
                                         frontendImage.push()
                                         frontendImage.push('latest')
                                     }
