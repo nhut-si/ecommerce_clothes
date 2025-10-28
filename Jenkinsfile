@@ -81,10 +81,10 @@ pipeline {
                         chmod 600 ~/.ssh/deploy_key
 
                         # Copy docker-compose.yml từ Jenkins sang server
-                        scp -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no docker-compose.prod.yml $SERVER_USER@$SERVER_HOST:~/ecommerce-clothes/docker-compose.yml
+                        scp -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no -q docker-compose.prod.yml $SERVER_USER@$SERVER_HOST:~/ecommerce-clothes/docker-compose.yml
 
                         # Copy nginx configuration
-                        scp -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no -r nginx $SERVER_USER@$SERVER_HOST:~/ecommerce-clothes/
+                        scp -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no -q -r nginx $SERVER_USER@$SERVER_HOST:~/ecommerce-clothes/
 
                         # SSH vào server để deploy
                         ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_HOST "
