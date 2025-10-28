@@ -16,6 +16,10 @@ pipeline {
         
         // Build number for tagging
         BUILD_TAG = "${BUILD_NUMBER}"
+
+        // Remote server
+        SERVER_HOST = "3.107.188.121"
+        SERVER_USER = "root"
     }
     
     tools {
@@ -184,19 +188,46 @@ pipeline {
             steps {
                 echo 'Deploying to production environment...'
                 script {
-                    // Có thể thêm manual approval
                     timeout(time: 5, unit: 'MINUTES') {
                         input message: 'Deploy to production?', ok: 'Deploy',
                               submitterParameter: 'DEPLOYER'
                     }
-                    
-                    // Deploy to production
-                    sh '''
-                        export DOCKER_USERNAME=${DOCKER_USERNAME}
-                        export BUILD_TAG=${BUILD_TAG}
-                        docker-compose -f docker-compose.prod.yml down
-                        docker-compose -f docker-compose.prod.yml up -d
-                    '''
+
+                    withCredentials([
+                        string(credentialsId: 'mongo-url-prod', variable: 'MONGO_URL_PROD'),
+                        string(credentialsId: 'jwt-secret', variable: 'JWT_SECRET'),
+                        string(credentialsId: 'cloudinary-cloud-name', variable: 'CLOUDINARY_CLOUD_NAME'),
+                        string(credentialsId: 'cloudinary-api-key', variable: 'CLOUDINARY_API_KEY'),
+                        string(credentialsId: 'cloudinary-api-secret', variable: 'CLOUDINARY_API_SECRET')
+                    ]) {
+                        sshagent (credentials: ['server-ssh-key']) {
+                            sh '''
+                                set -e
+                                # Prepare remote directory
+                                ssh -o StrictHostKeyChecking=no ${SERVER_USER}@${SERVER_HOST} "mkdir -p ~/ecommerce-clothes"
+
+                                # Copy compose file
+                                scp -o StrictHostKeyChecking=no docker-compose.prod.yml ${SERVER_USER}@${SERVER_HOST}:~/ecommerce-clothes/docker-compose.yml
+
+                                # Create .env and deploy remotely
+                                ssh -o StrictHostKeyChecking=no ${SERVER_USER}@${SERVER_HOST} "\
+                                  cd ~/ecommerce-clothes && \
+                                  echo DOCKER_USERNAME=${DOCKER_USERNAME} > .env && \
+                                  echo BUILD_TAG=${BUILD_TAG} >> .env && \
+                                  echo MONGO_URL_PROD=\"${MONGO_URL_PROD}\" >> .env && \
+                                  echo JWT_SECRET=\"${JWT_SECRET}\" >> .env && \
+                                  echo CLOUDINARY_CLOUD_NAME=\"${CLOUDINARY_CLOUD_NAME}\" >> .env && \
+                                  echo CLOUDINARY_API_KEY=\"${CLOUDINARY_API_KEY}\" >> .env && \
+                                  echo CLOUDINARY_API_SECRET=\"${CLOUDINARY_API_SECRET}\" >> .env && \
+                                  echo \"${DOCKER_PASSWORD}\" | docker login -u ${DOCKER_USERNAME} --password-stdin && \
+                                  docker compose --env-file .env pull && \
+                                  docker compose --env-file .env down && \
+                                  docker compose --env-file .env up -d && \
+                                  docker image prune -f \
+                                "
+                            '''
+                        }
+                    }
                 }
             }
         }
