@@ -45,11 +45,7 @@ pipeline {
         
         stage('Build Docker Images') {
             when {
-                anyOf {
-                    branch 'main'
                     branch 'master'
-                    branch 'develop'
-                }
             }
             parallel {
                 stage('Build Backend Image') {
