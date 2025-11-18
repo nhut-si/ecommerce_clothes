@@ -24,7 +24,7 @@ app.use(express.json());
 // Allow CORS from configured origins (comma-separated)
 const allowedOrigins = process.env.CORS_ORIGIN
   ? process.env.CORS_ORIGIN.split(",").map((s) => s.trim())
-  : ["http://localhost:3000"];
+  : ["http://localhost:5173"];
 
 app.use(cors({ origin: allowedOrigins, optionsSuccessStatus: 200 }));
 
@@ -75,5 +75,5 @@ app.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 app.listen(PORT, () => {
   console.log(`Server running at http://localhost:${PORT}`);
-  console.log(`Swagger docs at http://localhost:${PORT}/docs`);
+  // console.log(`Swagger docs at http://localhost:${PORT}/docs`);
 });

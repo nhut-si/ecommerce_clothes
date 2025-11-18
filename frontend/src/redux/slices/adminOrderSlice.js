@@ -23,8 +23,7 @@ export const fetchAllOrders = createAsyncThunk(
       return rejectWithValue(error.response.data);
     }
   }
-);
-
+)
 // Update order delivery status (Admin only)
 export const updateOrderStatus = createAsyncThunk(
   "adminOrders/updateOrderStatus",

@@ -17,4 +17,62 @@ router.get("/", protect, admin, async (req, res) => {
     }
 })
 
+// @route POST /api/admin/products
+// @desc Create a new product (Admin only)
+// @access Private/Admin
+router.post("/", protect, admin, async (req, res) => {
+    try {
+        const {
+            name,
+            price,
+            discountPrice,
+            description,
+            countInStock,
+            category,
+            brand,
+            sizes,
+            colors,
+            collections,
+            material,
+            gender,
+            images,
+            isFeatured,
+            isPublished,
+            tags,
+            dimensions,
+            weight,
+            sku,
+        } = req.body;
+
+        const product = new Product({
+            name,
+            price,
+            discountPrice,
+            description,
+            countInStock,
+            category,
+            brand,
+            sizes,
+            colors,
+            collections,
+            material,
+            gender,
+            images,
+            isFeatured,
+            isPublished,
+            tags,
+            dimensions,
+            weight,
+            sku,
+            user: req.user._id,
+        });
+
+        const createdProduct = await product.save();
+        res.status(201).json(createdProduct);
+    } catch (error) {
+        console.log(error);
+        res.status(500).send('Server error');
+    }
+});
+
 module.exports = router

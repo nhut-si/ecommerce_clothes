@@ -1,4 +1,4 @@
-# API Documentation
+<!-- # API Documentation
 
 ## Swagger UI
 
@@ -139,4 +139,4 @@ backend/
 
 3. **Authentication không hoạt động**
    - Kiểm tra JWT_SECRET trong `.env`
-   - Đảm bảo token format: `Bearer <token>`
+   - Đảm bảo token format: `Bearer <token>` -->

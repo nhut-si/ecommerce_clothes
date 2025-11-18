@@ -5,7 +5,7 @@ pipeline {
         REGISTRY = "docker.io/${DOCKER_USERNAME}"
         BACKEND_IMAGE = "ecommerce-backend"
         FRONTEND_IMAGE = "ecommerce-frontend"
-        SERVER_HOST = "3.107.188.121"
+        SERVER_HOST = "165.22.106.100"
         SERVER_USER = "ubuntu"
     }
 
@@ -37,13 +37,16 @@ pipeline {
         stage('Build Frontend') {
             steps {
                 dir('frontend') {
-                    withCredentials([usernamePassword(credentialsId: 'dockerhub-cred',
-                        usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+                    withCredentials([
+                        usernamePassword(credentialsId: 'dockerhub-cred',
+                            usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS'),
+                        string(credentialsId: 'paypal-client-id', variable: 'PAYPAL_CLIENT_ID')
+                    ]) {
                         
                         sh '''
                             docker build -t docker.io/$DOCKER_USER/$FRONTEND_IMAGE:latest \\
-                                --build-arg VITE_BACKEND_URL="" \\
-                                --build-arg VITE_PAYPAL_CLIENT_ID="" .
+                                --build-arg VITE_BACKEND_URL="http://$SERVER_HOST:5000" \\
+                                --build-arg VITE_PAYPAL_CLIENT_ID="$PAYPAL_CLIENT_ID" .
                         '''
                     }
                 }
@@ -83,9 +86,6 @@ pipeline {
                         # Copy docker-compose.yml từ Jenkins sang server
                         rsync -e "ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no" docker-compose.prod.yml $SERVER_USER@$SERVER_HOST:~/ecommerce-clothes/docker-compose.yml
 
-                        # Copy nginx configuration
-                        rsync -e "ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no" -r nginx/ $SERVER_USER@$SERVER_HOST:~/ecommerce-clothes/nginx/
-
                         # SSH vào server để deploy
                         ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_HOST "
                         cd ~/ecommerce-clothes && \\
@@ -94,7 +94,8 @@ pipeline {
                         echo \\"CLOUDINARY_CLOUD_NAME=$CLOUDINARY_CLOUD_NAME\\" >> .env && \\
                         echo \\"CLOUDINARY_API_KEY=$CLOUDINARY_API_KEY\\" >> .env && \\
                         echo \\"CLOUDINARY_API_SECRET=$CLOUDINARY_API_SECRET\\" >> .env && \\
-                        echo \\"CORS_ORIGIN=http://3.107.188.121,https://3.107.188.121\\" >> .env && \\
+                        echo \\"CORS_ORIGIN=http://$SERVER_HOST\\" >> .env && \\
+                        echo \\"DOCKER_USER=$DOCKER_USER\\" >> .env && \\
                         echo \\"$DOCKER_PASS\\" | docker login -u $DOCKER_USER --password-stdin && \\
                         docker compose --env-file .env pull && \\
                         docker compose --env-file .env down && \\
